@@ -75,7 +75,7 @@ const TodoList = ({
             <span
               className={
                 item.completed
-                  ? "line-through"
+                  ? "text-zinc-950 dark:text-zinc-200 line-through"
                   : "text-zinc-950 dark:text-zinc-200"
               }
             >
