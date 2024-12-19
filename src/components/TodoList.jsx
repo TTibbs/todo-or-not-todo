@@ -1,179 +1,119 @@
+import { useState } from "react";
+import { FaCheckCircle, FaRegTimesCircle, FaArrowsAltH } from "react-icons/fa";
+
 const TodoList = ({
   title,
-  inputId,
-  inputValue,
-  setInputValue,
   items,
-  onAddItem,
-  onDeleteItem,
-  onToggleComplete,
-  onTransferItem,
-  isNotTodoList,
-  iconSrc,
-  buttonColor,
-  hoverColor,
-  bgColor,
-  darkBgColor,
-  borderColor,
-  editingIndex,
-  editingText,
-  setEditingText,
-  editingList,
-  onStartEditing,
-  onCancelEditing,
-  onSaveEdit,
   setItems,
+  isNotTodoList,
+  onTransferItem,
 }) => {
-  const handleKeyPress = (event) => {
-    if (event.key === "Enter") {
-      onAddItem(inputValue);
+  const [inputValue, setInputValue] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (inputValue.trim()) {
+      setItems([...items, { text: inputValue, completed: false }]);
+      setInputValue("");
     }
   };
 
-  const handleEditKeyDown = (e, index) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      onSaveEdit(index);
-    }
+  const handleToggleComplete = (index) => {
+    setItems(
+      items.map((item, i) =>
+        i === index ? { ...item, completed: !item.completed } : item
+      )
+    );
+  };
+
+  const handleDelete = (index) => {
+    setItems(items.filter((_, i) => i !== index));
   };
 
   const handleSortItems = () => {
-    const sortedList = [...items].sort((a, b) => a.text.localeCompare(b.text));
-    setItems(sortedList);
+    setItems([...items].sort((a, b) => a.text.localeCompare(b.text)));
   };
+
+  const containerClasses = isNotTodoList
+    ? "bg-red-600 dark:bg-red-900"
+    : "bg-blue-700 dark:bg-blue-900";
 
   return (
     <div
-      className={`w-full h-fit md:w-1/2 text-slate-200 ${bgColor} dark:${darkBgColor} p-4 rounded-lg`}
+      className={`w-full md:w-1/2 text-slate-200 ${containerClasses} p-4 rounded-lg`}
     >
       <h2 className="mb-2 text-lg md:text-xl text-center font-bold">{title}</h2>
-      <hr className={`w-1/2 md:w-2/3 mb-4 border-2 ${borderColor} mx-auto`} />
-
-      <div className="flex flex-col items-center">
-        <label
-          htmlFor={inputId}
-          className="mb-2 font-semibold text-base md:text-lg"
-        >
-          {isNotTodoList ? "Not To Do" : "To Do"}
-        </label>
-        <div className="relative w-full max-w-xs md:max-w-lg">
-          <input
-            type="text"
-            id={inputId}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-            className="p-2 pl-10 text-zinc-950 border rounded bg-white w-full"
-          />
-          <img
-            src={iconSrc}
-            alt={`${isNotTodoList ? "Not To-Do" : "To-Do"} Icon`}
-            className="absolute left-2 top-1/2 transform -translate-y-1/2 w-6 h-6"
-          />
-        </div>
+      <form
+        onSubmit={handleSubmit}
+        className="flex items-center justify-between gap-5"
+      >
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          className="p-2 text-zinc-200 dark:text-zinc-950 border rounded w-full"
+          placeholder={`Add a ${isNotTodoList ? "Not To-Do" : "To-Do"}`}
+        />
         <button
-          onClick={() => onAddItem(inputValue)}
-          className={`mt-2 ${buttonColor} text-white p-2 rounded-lg hover:${hoverColor} border-slate-100 border-2`}
+          type="submit"
+          className={`py-2 px-3 ${
+            isNotTodoList
+              ? "bg-red-400 hover:bg-red-500"
+              : "bg-blue-500 hover:bg-blue-600"
+          } text-white rounded`}
         >
-          Add {isNotTodoList ? "Not To-Do" : "To-Do"}
+          Add
         </button>
-      </div>
+      </form>
 
-      <ul className="mt-4 flex-col items-center justify-center">
+      <ul className="mt-4">
         {items.map((item, index) => (
           <li
             key={index}
-            className="flex items-center justify-between text-zinc-950 dark:text-slate-200 bg-slate-300 dark:bg-gray-700 p-2 rounded mb-2"
+            className="flex justify-between items-center bg-slate-300 dark:bg-gray-700 p-2 rounded mb-2"
           >
-            {editingIndex === index &&
-            editingList === (isNotTodoList ? "notTodos" : "todos") ? (
-              <input
-                type="text"
-                value={editingText}
-                onChange={(e) => setEditingText(e.target.value)}
-                onKeyDown={(e) => handleEditKeyDown(e, index)}
-                className="mr-2 p-1 text-black"
-                autoFocus
-              />
-            ) : (
-              <span className={item.completed ? "line-through" : ""}>
-                {item.text}
-              </span>
-            )}
-            <div className="flex items-center justify-between">
-              {editingIndex === index &&
-              editingList === (isNotTodoList ? "notTodos" : "todos") ? (
-                <>
-                  <button
-                    onClick={() => onSaveEdit(index)}
-                    className="mr-2 bg-green-500 text-white p-1 rounded"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={onCancelEditing}
-                    className="mr-2 bg-gray-500 text-white p-1 rounded"
-                  >
-                    Cancel
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => onStartEditing(index, item.text)}
-                    className="mr-2"
-                  >
-                    <img
-                      src="https://img.icons8.com/color/48/000000/edit.png"
-                      alt="Edit"
-                      className="w-6 h-6"
-                    />
-                  </button>
-                  <button
-                    onClick={() => onToggleComplete(index)}
-                    className="mr-2"
-                  >
-                    <img
-                      src={`https://img.icons8.com/color/48/000000/${
-                        item.completed
-                          ? "checked-checkbox"
-                          : "unchecked-checkbox"
-                      }.png`}
-                      alt="Complete"
-                      className="w-6 h-6"
-                    />
-                  </button>
-                  <button onClick={() => onDeleteItem(index)} className="mr-2">
-                    <img
-                      src="https://img.icons8.com/color/48/000000/trash.png"
-                      alt="Delete"
-                      className="w-6 h-6"
-                    />
-                  </button>
-                  <button onClick={() => onTransferItem(index)}>
-                    <img
-                      src={`https://img.icons8.com/color/48/000000/${
-                        isNotTodoList ? "ok" : "do-not-disturb"
-                      }.png`}
-                      alt="Transfer"
-                      className="w-6 h-6"
-                    />
-                  </button>
-                </>
-              )}
+            <span
+              className={
+                item.completed
+                  ? "line-through"
+                  : "text-zinc-950 dark:text-zinc-200"
+              }
+            >
+              {item.text}
+            </span>
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={() => handleToggleComplete(index)}
+                className="text-green-500 w-"
+              >
+                <FaCheckCircle />
+              </button>
+              <button
+                onClick={() => handleDelete(index)}
+                className="text-red-500"
+              >
+                <FaRegTimesCircle />
+              </button>
+              <button
+                onClick={() => onTransferItem(index)}
+                className="text-blue-500"
+              >
+                <FaArrowsAltH />
+              </button>
             </div>
           </li>
         ))}
       </ul>
+
       <button
         onClick={handleSortItems}
-        className={`p-2 ${
+        className={`mt-4 p-2 rounded ${
           isNotTodoList
             ? "bg-red-400 hover:bg-red-500"
             : "bg-blue-500 hover:bg-blue-600"
-        } rounded-lg border-slate-100 border-2`}
+        }`}
       >
-        Sort {isNotTodoList ? "Not To Do" : "To Do"}
+        Sort
       </button>
     </div>
   );
